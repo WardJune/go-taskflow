@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"net/http"
+	"context"
+	"time"
 
 	"github.com/WardJune/taskflow/internal/domain"
+	"github.com/WardJune/taskflow/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,43 +18,50 @@ func NewUserHandler(userService domain.UserService) *UserHandler {
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
 	var req domain.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.BadRequest(c, err)
 		return
 	}
 
-	resp, err := h.userService.Register(c.Request.Context(), &req)
+	resp, err := h.userService.Register(ctx, &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.BadRequest(c, err)
+		return
 	}
 
-	c.JSON(http.StatusCreated, resp)
+	response.Created(c, resp)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
 	var req domain.LoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.BadRequest(c, err)
 		return
 	}
 
-	resp, err := h.userService.Login(c.Request.Context(), &req)
+	resp, err := h.userService.Login(ctx, &req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		response.Unauthorized(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	response.OK(c, resp)
 }
 
 func (h *UserHandler) Me(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	email := c.GetString("user_email")
 
-	c.JSON(http.StatusOK, gin.H{
+	response.OK(c, gin.H{
 		"user_id": userID,
 		"email":   email,
 	})

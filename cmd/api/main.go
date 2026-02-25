@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/WardJune/taskflow/internal/handler"
-	"github.com/WardJune/taskflow/internal/middleware"
 	"github.com/WardJune/taskflow/internal/repository"
 	"github.com/WardJune/taskflow/internal/service"
 	"github.com/WardJune/taskflow/pkg/config"
@@ -19,34 +18,23 @@ func main() {
 	defer db.Close()
 
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo, cfg.JWTSecret)
-	userHandler := handler.NewUserHandler(userService)
+	projectRepo := repository.NewProjectRepository(db)
+	taskRepo := repository.NewTaskRepository(db)
 
-	router := gin.Default()
+	userService := service.NewUserService(userRepo, cfg.JWTSecret)
+	projectService := service.NewProjectService(projectRepo, taskRepo, userRepo)
+	taskService := service.NewTaskService(taskRepo, projectRepo)
+
+	userHandler := handler.NewUserHandler(userService)
+	projectHandler := handler.NewProjectHandler(projectService, taskService)
 
 	//router
-
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "ok",
-			"message": "TaskFlow API is running",
-		})
-	})
-
-	auth := router.Group("/api/auth")
-	{
-		auth.POST("/register", userHandler.Register)
-		auth.POST("/login", userHandler.Login)
-	}
-
-	api := router.Group("/api")
-	api.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-	{
-		api.GET("/me", userHandler.Me)
-	}
+	engine := gin.New()
+	router := handler.NewRouter(userHandler, projectHandler)
+	router.Setup(engine, cfg.JWTSecret)
 
 	log.Printf("Server starting on port %s", cfg.AppPort)
-	if err := router.Run(":" + cfg.AppPort); err != nil {
+	if err := engine.Run(":" + cfg.AppPort); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
 
