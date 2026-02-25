@@ -52,7 +52,11 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*domain
 func (r *userRepository) FindById(ctx context.Context, id int64) (*domain.User, error) {
 	var user domain.User
 
-	query := `SELECT id, name, email, password, created_at WHERE id = $1`
+	query := `
+		SELECT id, name, email, password, created_at
+		FROM users
+ 		WHERE id = $1
+  `
 
 	err := r.db.GetContext(ctx, &user, query, id)
 
