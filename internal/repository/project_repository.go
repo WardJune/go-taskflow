@@ -44,7 +44,7 @@ func (r *projectRepository) FindByID(ctx context.Context, id int64) (*domain.Pro
 }
 
 func (r *projectRepository) FindByUserID(ctx context.Context, userID int64) ([]domain.Project, error) {
-	var projects []domain.Project
+	projects := make([]domain.Project, 0)
 
 	query := `
 		SELECT p.id, p.name, p.description, p.owner_id, p.created_at
@@ -84,7 +84,7 @@ func (r *projectRepository) IsMember(ctx context.Context, projectID, userID int6
 }
 
 func (r *projectRepository) GetMembers(ctx context.Context, projectID int64) ([]domain.User, error) {
-	var members []domain.User
+	members := make([]domain.User, 0)
 
 	query := `
 		SELECT u.id, u.name, u.email, u.created_at
