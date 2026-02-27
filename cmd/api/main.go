@@ -30,7 +30,7 @@ func main() {
 	projectHandler := handler.NewProjectHandler(projectService, taskService)
 
 	//router
-	engine := gin.New()
+	engine := gin.Default()
 	engine.Use(middleware.CORSmiddleware())
 	router := handler.NewRouter(userHandler, projectHandler)
 	router.Setup(engine, cfg.JWTSecret)

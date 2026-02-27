@@ -115,7 +115,7 @@ func (h *ProjectHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	response.Created(c, gin.H{"task": task})
+	response.Created(c, task)
 }
 
 func (h *ProjectHandler) UpdateTask(c *gin.Context) {
@@ -138,7 +138,7 @@ func (h *ProjectHandler) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	response.OK(c, gin.H{"task": task})
+	response.OK(c, task)
 }
 
 func (h *ProjectHandler) DeleteTask(c *gin.Context) {
