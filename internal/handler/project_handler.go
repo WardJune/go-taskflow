@@ -70,7 +70,7 @@ func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
 		response.InternalServerError(c, err)
 		return
 	}
-	response.OK(c, gin.H{"projects": projects})
+	response.OK(c, projects)
 }
 
 func (h *ProjectHandler) AddMember(c *gin.Context) {
