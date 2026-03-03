@@ -60,11 +60,13 @@ type ProjectRepository interface {
 	AddMember(ctx context.Context, member *ProjectMember) error
 	IsMember(ctx context.Context, projectID, userID int64) (bool, error)
 	GetMembers(ctx context.Context, projectID int64) ([]User, error)
+	GetAvailableUser(ctx context.Context, projectID int64) ([]User, error)
 }
 
 type ProjectService interface {
 	Create(ctx context.Context, ownerID int64, req *CreateProjectRequest) (*Project, error)
 	GetByID(ctx context.Context, projectID, requesterID int64) (*ProjectDetail, error)
 	GetUserProjects(ctx context.Context, userID int64) ([]Project, error)
+	GetAvailableUserProjects(ctx context.Context, projectID int64) ([]User, error)
 	AddMember(ctx context.Context, projectID, ownerID int64, req *AddMemberRequest) error
 }

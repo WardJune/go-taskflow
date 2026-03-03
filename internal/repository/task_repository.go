@@ -45,7 +45,7 @@ func (r *taskRepository) FindByID(ctx context.Context, id int64) (*domain.Task, 
 }
 
 func (r *taskRepository) FindByProjectID(ctx context.Context, projectID int64) ([]domain.Task, error) {
-	var tasks []domain.Task
+	tasks := make([]domain.Task, 0)
 
 	query := `
 		SELECT * FROM tasks

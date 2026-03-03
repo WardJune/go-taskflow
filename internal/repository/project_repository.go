@@ -44,7 +44,7 @@ func (r *projectRepository) FindByID(ctx context.Context, id int64) (*domain.Pro
 }
 
 func (r *projectRepository) FindByUserID(ctx context.Context, userID int64) ([]domain.Project, error) {
-	var projects []domain.Project
+	projects := make([]domain.Project, 0)
 
 	query := `
 		SELECT p.id, p.name, p.description, p.owner_id, p.created_at
@@ -84,7 +84,7 @@ func (r *projectRepository) IsMember(ctx context.Context, projectID, userID int6
 }
 
 func (r *projectRepository) GetMembers(ctx context.Context, projectID int64) ([]domain.User, error) {
-	var members []domain.User
+	members := make([]domain.User, 0)
 
 	query := `
 		SELECT u.id, u.name, u.email, u.created_at
@@ -92,6 +92,24 @@ func (r *projectRepository) GetMembers(ctx context.Context, projectID int64) ([]
 		INNER JOIN project_members pm ON u.id = pm.user_id
 		WHERE pm.project_id = $1
 	`
+
+	if err := r.db.SelectContext(ctx, &members, query, projectID); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}
+
+func (r *projectRepository) GetAvailableUser(ctx context.Context, projectID int64) ([]domain.User, error) {
+	members := make([]domain.User, 0)
+
+	query := `SELECT * FROM users
+		WHERE id NOT IN
+			(
+				SELECT user_id FROM project_members
+				WHERE project_id = $1
+			);
+	;`
 
 	if err := r.db.SelectContext(ctx, &members, query, projectID); err != nil {
 		return nil, err

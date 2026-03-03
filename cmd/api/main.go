@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/WardJune/taskflow/internal/handler"
+	"github.com/WardJune/taskflow/internal/middleware"
 	"github.com/WardJune/taskflow/internal/repository"
 	"github.com/WardJune/taskflow/internal/service"
 	"github.com/WardJune/taskflow/pkg/config"
@@ -29,7 +30,8 @@ func main() {
 	projectHandler := handler.NewProjectHandler(projectService, taskService)
 
 	//router
-	engine := gin.New()
+	engine := gin.Default()
+	engine.Use(middleware.CORSmiddleware())
 	router := handler.NewRouter(userHandler, projectHandler)
 	router.Setup(engine, cfg.JWTSecret)
 

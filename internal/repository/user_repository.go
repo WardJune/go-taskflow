@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/WardJune/taskflow/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -18,8 +19,11 @@ func NewUserRepository(db *sqlx.DB) domain.UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
-	query := `INSERT INTO users (name, email, password)
-		VALUES (:name, :email, :password) RETURNING id, created_at`
+	query := `
+		INSERT INTO users (name, email, password)
+		VALUES (:name, :email, :password)
+		RETURNING id, created_at
+	`
 
 	rows, err := r.db.NamedQueryContext(ctx, query, user)
 	if err != nil {
@@ -32,6 +36,20 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 		return rows.Scan(&user.ID, &user.CreatedAt)
 	}
 	return nil
+}
+
+func (r *userRepository) FindAll(ctx context.Context) ([]domain.User, error) {
+	users := make([]domain.User, 0)
+
+	query := `SELECT * FROM users ORDER BY name ASC`
+
+	if err := r.db.SelectContext(ctx, &users, query); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("users: %v\n", users)
+
+	return users, nil
 }
 
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
