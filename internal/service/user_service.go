@@ -77,3 +77,13 @@ func (s *userService) Login(ctx context.Context, req *domain.LoginRequest) (*dom
 
 	return &domain.AuthResponse{Token: t, User: *user}, nil
 }
+
+func (s *userService) FindAll(ctx context.Context) ([]domain.User, error) {
+	users, err := s.userRepo.FindAll(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

@@ -31,6 +31,7 @@ type AuthResponse struct {
 
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
+	FindAll(ctx context.Context) ([]User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindById(ctx context.Context, id int64) (*User, error)
 }
@@ -38,4 +39,5 @@ type UserRepository interface {
 type UserService interface {
 	Register(ctx context.Context, req *RegisterRequest) (*AuthResponse, error)
 	Login(ctx context.Context, req *LoginRequest) (*AuthResponse, error)
+	FindAll(ctx context.Context) ([]User, error)
 }

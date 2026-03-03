@@ -57,6 +57,16 @@ func (h *UserHandler) Login(c *gin.Context) {
 	response.OK(c, resp)
 }
 
+func (h *UserHandler) FindAll(c *gin.Context) {
+	users, err := h.userService.FindAll(c.Request.Context())
+	if err != nil {
+		response.InternalServerError(c, err)
+		return
+	}
+
+	response.OK(c, users)
+}
+
 func (h *UserHandler) Me(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	email := c.GetString("user_email")

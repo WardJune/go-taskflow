@@ -73,6 +73,21 @@ func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
 	response.OK(c, projects)
 }
 
+func (h *ProjectHandler) GetAvailableUser(c *gin.Context) {
+	projectId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, errors.New("invalid project id"))
+		return
+	}
+
+	users, err := h.projectService.GetAvailableUserProjects(c.Request.Context(), projectId)
+	if err != nil {
+		response.InternalServerError(c, err)
+		return
+	}
+	response.OK(c, users)
+}
+
 func (h *ProjectHandler) AddMember(c *gin.Context) {
 	projectId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

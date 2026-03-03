@@ -99,3 +99,21 @@ func (r *projectRepository) GetMembers(ctx context.Context, projectID int64) ([]
 
 	return members, nil
 }
+
+func (r *projectRepository) GetAvailableUser(ctx context.Context, projectID int64) ([]domain.User, error) {
+	members := make([]domain.User, 0)
+
+	query := `SELECT * FROM users
+		WHERE id NOT IN
+			(
+				SELECT user_id FROM project_members
+				WHERE project_id = $1
+			);
+	;`
+
+	if err := r.db.SelectContext(ctx, &members, query, projectID); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}

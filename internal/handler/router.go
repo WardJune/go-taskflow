@@ -28,12 +28,19 @@ func (r *Router) Setup(engine *gin.Engine, jwtSecret string) {
 	{
 		api.GET("/me", r.userHandler.Me)
 
+		//user
+		users := api.Group("/users")
+		{
+			users.GET("", r.userHandler.FindAll)
+		}
+
 		//projects
 		projects := api.Group("/projects")
 		{
 			projects.POST("", r.projectHandler.Create)
 			projects.GET("", r.projectHandler.GetMyProjects)
 			projects.GET("/:id", r.projectHandler.GetByID)
+			projects.GET("/:id/users", r.projectHandler.GetAvailableUser)
 			projects.POST("/:id/members", r.projectHandler.AddMember)
 			projects.POST("/:id/tasks", r.projectHandler.CreateTask)
 		}

@@ -99,6 +99,16 @@ func (s *projectService) GetUserProjects(ctx context.Context, userID int64) ([]d
 	return projects, nil
 }
 
+func (s *projectService) GetAvailableUserProjects(ctx context.Context, projectID int64) ([]domain.User, error) {
+	users, err := s.projectRepo.GetAvailableUser(ctx, projectID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (s *projectService) AddMember(ctx context.Context, projectID, ownerID int64, req *domain.AddMemberRequest) error {
 	project, err := s.projectRepo.FindByID(ctx, projectID)
 
