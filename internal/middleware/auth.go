@@ -11,21 +11,27 @@ import (
 
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		tokenString := ""
+
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			response.Unauthorized(c, errors.New("authorization header required"))
-			c.Abort()
+
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) == 2 || parts[0] == "Bearer" {
+				tokenString = parts[1]
+			}
+		}
+
+		if tokenString == "" {
+			tokenString = c.Query("token")
+		}
+
+		if tokenString == "" {
+			response.Unauthorized(c, errors.New("authorization required"))
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			response.Unauthorized(c, errors.New("invalid authorization format"))
-			c.Abort()
-			return
-		}
-
-		claims, err := token.Verify(parts[1], jwtSecret)
+		claims, err := token.Verify(tokenString, jwtSecret)
 
 		if err != nil {
 			response.Unauthorized(c, errors.New("invalid or expired token"))
