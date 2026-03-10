@@ -8,10 +8,11 @@ import (
 type Router struct {
 	userHandler    *UserHandler
 	projectHandler *ProjectHandler
+	wsHandler      *WSHandler
 }
 
-func NewRouter(userHandler *UserHandler, projectHandler *ProjectHandler) *Router {
-	return &Router{userHandler, projectHandler}
+func NewRouter(userHandler *UserHandler, projectHandler *ProjectHandler, wsHandler *WSHandler) *Router {
+	return &Router{userHandler, projectHandler, wsHandler}
 }
 
 func (r *Router) Setup(engine *gin.Engine, jwtSecret string) {
@@ -26,6 +27,9 @@ func (r *Router) Setup(engine *gin.Engine, jwtSecret string) {
 	api := engine.Group("/api")
 	api.Use(middleware.AuthMiddleware(jwtSecret))
 	{
+		//websocket
+		api.GET("/ws/projects/:project_id", r.wsHandler.HandleWS)
+
 		api.GET("/me", r.userHandler.Me)
 
 		//user

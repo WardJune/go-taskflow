@@ -5,17 +5,20 @@ import (
 	"errors"
 
 	"github.com/WardJune/taskflow/internal/domain"
+	ws "github.com/WardJune/taskflow/internal/websocket"
 )
 
 type taskService struct {
 	taskRepo    domain.TaskRepository
 	projectRepo domain.ProjectRepository
+	hub         *ws.Hub
 }
 
-func NewTaskService(taskRepo domain.TaskRepository, projectRepo domain.ProjectRepository) domain.TaskService {
+func NewTaskService(taskRepo domain.TaskRepository, projectRepo domain.ProjectRepository, hub *ws.Hub) domain.TaskService {
 	return &taskService{
 		taskRepo:    taskRepo,
 		projectRepo: projectRepo,
+		hub:         hub,
 	}
 }
 
@@ -55,6 +58,13 @@ func (s *taskService) Create(ctx context.Context, projectID, creatorID int64, re
 	if err := s.taskRepo.Create(ctx, task); err != nil {
 		return nil, err
 	}
+
+	s.hub.BroadcastToProject(projectID, ws.Notification{
+		Type:      "task_created",
+		ProjectID: projectID,
+		Message:   "New task created: " + task.Title,
+		Data:      task,
+	})
 
 	return task, nil
 }
@@ -111,6 +121,13 @@ func (s *taskService) Update(ctx context.Context, taskID, requesterID int64, req
 		return nil, err
 	}
 
+	s.hub.BroadcastToProject(task.ProjectID, ws.Notification{
+		Type:      "task_updated",
+		ProjectID: task.ProjectID,
+		Message:   "Task updated: " + task.Title,
+		Data:      task,
+	})
+
 	return task, nil
 }
 
@@ -128,6 +145,13 @@ func (s *taskService) Delete(ctx context.Context, taskID, requesterID int64) err
 	if task.CreatedBy != requesterID {
 		return errors.New("only task creator can delete this task")
 	}
+
+	s.hub.BroadcastToProject(task.ProjectID, ws.Notification{
+		Type:      "task_deleted",
+		ProjectID: task.ProjectID,
+		Message:   "Task deleted: " + task.Title,
+		Data:      map[string]int64{"task_id": taskID},
+	})
 
 	return s.taskRepo.Delete(ctx, taskID)
 }
